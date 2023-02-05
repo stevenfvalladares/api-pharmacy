@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const format = require("pg-format");
 
 const pool = new Pool({
   user: "steven",
@@ -9,17 +10,27 @@ const pool = new Pool({
   allowExitOnIdle: true,
 });
 
-const getMedicines = async ({ limits = 10 }) => {
-  const query = "SELECT * FROM medicines LIMIT $1";
-  const values = [limits];
-  const { rows: medicines } = await pool.query(query, values);
+const getMedicines = async ({ limits = 10, order_by = "id_ASC" }) => {
+  const [field, address] = order_by.split("_");
+  const formattedQuery = format(
+    "SELECT * FROM medicines ORDER BY %s %s LIMIT %s",
+    field,
+    address,
+    limits
+  );
+  const { rows: medicines } = await pool.query(formattedQuery);
   return medicines;
 };
 
-const getStaff = async ({ limits = 10 }) => {
-  const query = "SELECT * FROM staff LIMIT $1";
-  const values = [limits];
-  const { rows: staff } = await pool.query(query, values);
+const getStaff = async ({ limits = 10, order_by = "id_ASC" }) => {
+  const [field, address] = order_by.split("_");
+  const formattedQuery = format(
+    "SELECT * FROM staff ORDER BY %s %s LIMIT %s",
+    field,
+    address,
+    limits
+  );
+  const { rows: staff } = await pool.query(formattedQuery);
   return staff;
 };
 
