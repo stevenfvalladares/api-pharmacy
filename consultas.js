@@ -54,4 +54,27 @@ const getStaff = async ({ limits = 10, order_by = "id_ASC", page = 1 }) => {
   return staff;
 };
 
-module.exports = { getMedicines, getStaff };
+const getMedicinesByFilters = async ({ price_max, stock_min }) => {
+  let filters = [];
+  const values = [];
+
+  const addFilter = (field, comparator, value) => {
+    values.push(value);
+    const { length } = filters;
+    filters.push(`${field} ${comparator} $${length + 1}`);
+  };
+
+  if (price_max) addFilter("price", "<=", price_max);
+  if (stock_min) addFilter("stock", ">=", stock_min);
+
+  let consult = "SELECT * FROM medicines";
+  if (filters.length > 0) {
+    filters = filters.join(" AND ");
+    consult += ` WHERE ${filters}`;
+  }
+
+  const { rows: medicines } = await pool.query(consult, values);
+  return medicines;
+};
+
+module.exports = { getMedicines, getStaff, getMedicinesByFilters };
